@@ -65,27 +65,30 @@ String UniversalTelegramBot::buildCommand(const String& cmd) {
 String UniversalTelegramBot::sendGetToTelegram(const String& command) {
   String body, headers;
   
-  // Connect with api.telegram.org if not already connected
+  // Connect with api.telegram.org (or proxy) if not already connected
   if (!client->connected()) {
-    #ifdef TELEGRAM_DEBUG  
+    #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT]Connecting to server"));
     #endif
-    if (!client->connect(TELEGRAM_HOST, TELEGRAM_SSL_PORT)) {
-      #ifdef TELEGRAM_DEBUG  
+    const char* host = proxyHost.length() > 0 ? proxyHost.c_str() : TELEGRAM_HOST;
+    int port = proxyHost.length() > 0 ? proxyPort : TELEGRAM_SSL_PORT;
+    if (!client->connect(host, port)) {
+      #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT]Connection error"));
       #endif
     }
   }
   if (client->connected()) {
 
-    #ifdef TELEGRAM_DEBUG  
+    #ifdef TELEGRAM_DEBUG
         Serial.println("sending: " + command);
-    #endif  
+    #endif
 
     client->print(F("GET /"));
     client->print(command);
     client->println(F(" HTTP/1.1"));
-    client->println(F("Host:" TELEGRAM_HOST));
+    client->print(F("Host:"));
+    client->println(proxyHost.length() > 0 ? proxyHost : String(F(TELEGRAM_HOST)));
     client->println(F("Accept: application/json"));
     client->println(F("Cache-Control: no-cache"));
     client->println();
@@ -142,13 +145,15 @@ String UniversalTelegramBot::sendPostToTelegram(const String& command, JsonObjec
   String body;
   String headers;
 
-  // Connect with api.telegram.org if not already connected
+  // Connect with api.telegram.org (or proxy) if not already connected
   if (!client->connected()) {
-    #ifdef TELEGRAM_DEBUG  
+    #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT Client]Connecting to server"));
     #endif
-    if (!client->connect(TELEGRAM_HOST, TELEGRAM_SSL_PORT)) {
-      #ifdef TELEGRAM_DEBUG  
+    const char* host = proxyHost.length() > 0 ? proxyHost.c_str() : TELEGRAM_HOST;
+    int port = proxyHost.length() > 0 ? proxyPort : TELEGRAM_SSL_PORT;
+    if (!client->connect(host, port)) {
+      #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT Client]Connection error"));
       #endif
     }
@@ -159,7 +164,8 @@ String UniversalTelegramBot::sendPostToTelegram(const String& command, JsonObjec
     client->print(command);
     client->println(F(" HTTP/1.1"));
     // Host header
-    client->println(F("Host:" TELEGRAM_HOST));
+    client->print(F("Host:"));
+    client->println(proxyHost.length() > 0 ? proxyHost : String(F(TELEGRAM_HOST)));
     // JSON content type
     client->println(F("Content-Type: application/json"));
 
@@ -197,13 +203,15 @@ String UniversalTelegramBot::sendMultipartFormDataToTelegram(
   
   const String boundary = F("------------------------b8f610217e83e29b");
 
-  // Connect with api.telegram.org if not already connected
+  // Connect with api.telegram.org (or proxy) if not already connected
   if (!client->connected()) {
-    #ifdef TELEGRAM_DEBUG  
+    #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT Client]Connecting to server"));
     #endif
-    if (!client->connect(TELEGRAM_HOST, TELEGRAM_SSL_PORT)) {
-      #ifdef TELEGRAM_DEBUG  
+    const char* host = proxyHost.length() > 0 ? proxyHost.c_str() : TELEGRAM_HOST;
+    int port = proxyHost.length() > 0 ? proxyPort : TELEGRAM_SSL_PORT;
+    if (!client->connect(host, port)) {
+      #ifdef TELEGRAM_DEBUG
         Serial.println(F("[BOT Client]Connection error"));
       #endif
     }
@@ -235,7 +243,8 @@ String UniversalTelegramBot::sendMultipartFormDataToTelegram(
     client->print(buildCommand(command));
     client->println(F(" HTTP/1.1"));
     // Host header
-    client->println(F("Host: " TELEGRAM_HOST)); // bugfix - https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot/issues/186
+    client->print(F("Host: ")); // bugfix - https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot/issues/186
+    client->println(proxyHost.length() > 0 ? proxyHost : String(F(TELEGRAM_HOST)));
     client->println(F("User-Agent: arduino/1.0"));
     client->println(F("Accept: */*"));
 

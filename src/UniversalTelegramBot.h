@@ -128,6 +128,12 @@ public:
   int last_sent_message_id = 0;
   int maxMessageLength = 1500;
 
+  // Optional Cloudflare Worker (or any HTTPS reverse proxy) to route requests through.
+  // Set proxyHost to your worker domain, e.g. "my-bot.yourname.workers.dev"
+  // Leave empty (default) to connect directly to api.telegram.org
+  String proxyHost = "";
+  int proxyPort = 443;
+
 private:
   // JsonObject * parseUpdates(String response);
   String _token;
